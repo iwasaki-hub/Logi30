@@ -42,6 +42,7 @@ const register = async (req, res, next) => {
       email,
       password: hashedPassword,
     });
+    user.password = undefined;
 
     // JWT生成
     const token = generateToken(user._id);
@@ -83,7 +84,7 @@ const login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: "メールアドレスが存在しません。",
+        message: "メールアドレスまたはパスワードが正しくありません。",
       });
     }
 
@@ -93,7 +94,7 @@ const login = async (req, res, next) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: "パスワードが違います。",
+        message: "メールアドレスまたはパスワードが正しくありません。",
       });
     }
 
@@ -126,11 +127,7 @@ const login = async (req, res, next) => {
  */
 const logout = async (req, res, next) => {
   try {
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    });
+    res.clearCookie("accessToken", cookieOptions);
 
     res.status(200).json({
       success: true,
